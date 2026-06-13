@@ -1,0 +1,39 @@
+# Environment variables
+.env
+*.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# GitHub / OS
+.DS_Store
+Thumbs.db
+
+# Terraform (good habit from your roadmap)
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Secrets
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+*.swp
