@@ -1,0 +1,80 @@
+name: Docker Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  IMAGE_NAME: weather-app
+
+jobs:
+  build-and-test:
+    name: Build, Test & Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Test image starts correctly
+        run: |
+          docker run -d \
+            --name test-container \
+            -e DB_HOST=localhost \
+            -e DB_USER=test \
+            -e DB_PASSWORD=test \
+            -e DB_NAME=test \
+            -e WEATHER_API_KEY=test \
+            -p 8080:8080 \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          
+          # Wait for container to start
+          sleep 5
+          
+          # Container should be running (health check may fail without real DB — that's ok)
+          docker ps | grep test-container
+          
+          # Check the image size
+          docker image inspect ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --format '{{.Size}}' | \
+            awk '{printf "Image size: %.1f MB\n", $1/1024/1024}'
+          
+          docker stop test-container
+          docker rm test-container
+
+      - name: Verify non-root user
+        run: |
+          USER=$(docker run --rm \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            whoami)
+          echo "Container runs as: $USER"
+          [ "$USER" != "root" ] || (echo "ERROR: running as root!" && exit 1)
+
+      - name: Check image has health check
+        run: |
+          HEALTHCHECK=$(docker inspect \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --format '{{.Config.Healthcheck}}')
+          echo "Health check: $HEALTHCHECK"
+          [ "$HEALTHCHECK" != "<nil>" ] || (echo "ERROR: no health check!" && exit 1)
+
+      - name: Tag image with git SHA
+        run: |
+          echo "Image built successfully"
+          echo "Tag: ${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "This image would be pushed to ECR in Week 18"

@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  app:
+    image: ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+    build: !reset null    # disable local build
+    environment:
+      - DB_HOST=${RDS_ENDPOINT}  # RDS, not local MySQL
+    volumes: []           # no local volumes in production
+  
+  db:
+    # In production, db is RDS — remove this service
+    profiles:
+      - local-only        # only starts with: docker compose --profile local-only up
+
+  nginx:
+    image: nginx:alpine
