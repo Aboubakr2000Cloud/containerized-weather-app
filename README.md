@@ -358,32 +358,6 @@ GitHub Actions Process:
 
 ---
 
-# 📸 Screenshots
-
-Suggested screenshots:
-
-### Application Homepage
-
-`screenshots/homepage.png`
-
-### Weather Query Example
-
-`screenshots/weather-query.png`
-
-### API History Output
-
-`screenshots/history.png`
-
-### Docker Compose Services
-
-`screenshots/docker-compose-ps.png`
-
-### GitHub Actions Success
-
-`screenshots/github-actions-success.png`
-
----
-
 # 📚 Key Concepts Learned
 
 * Containerization
